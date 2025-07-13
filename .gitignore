@@ -1,4 +1,4 @@
 /db.sqlite3
 /venv
 migrations/*.py
-/*.db
+/*.db"__pycache__/" 
