@@ -6,14 +6,18 @@ from django.urls import reverse_lazy
 class CustomLoginView(LoginView):
     template_name = 'accounts/login.html'
 
-class CustomLogoutView(LogoutView):
-    next_page = reverse_lazy('accounts:login')
+    def get_success_url(self):
+        return reverse_lazy('accounts:dashboard')
+
 
 class RegisterView(FormView):
     template_name = 'accounts/register.html'
     form_class = UserCreationForm
-    success_url = reverse_lazy('accounts:login')
+    success_url = reverse_lazy('accounts:dashboard')
 
     def form_valid(self, form):
-        form.save()
+        user = form.save()
+        from django.contrib.auth import login
+        login(self.request, user)
         return super().form_valid(form)
+
