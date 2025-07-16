@@ -20,4 +20,9 @@ class RegisterView(FormView):
         from django.contrib.auth import login
         login(self.request, user)
         return super().form_valid(form)
+    
+
+
+class CustomLogoutView(LogoutView):
+    next_page = '/'  # or wherever you want to redirect after logout    
 
