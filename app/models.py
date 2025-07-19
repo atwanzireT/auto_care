@@ -66,9 +66,6 @@ class Customer(models.Model):
         validators=[RegexValidator(r'^\+?1?\d{9,15}$')]
     )
     address = models.TextField(blank=True)
-    city = models.CharField(max_length=100, blank=True)
-    state = models.CharField(max_length=50, blank=True)
-    zip_code = models.CharField(max_length=20, blank=True)
     notes = models.TextField(blank=True)
     preferred_contact_method = models.CharField(
         max_length=10,
