@@ -4,24 +4,197 @@
     <meta charset="UTF-8">
     <title>{% block title %}AutoCare{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
+    <meta name="description" content="AutoCare - Your vehicle maintenance companion">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs" defer></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+
 </head>
-<body class="bg-gray-100 text-gray-800 min-h-screen">
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col md:flex-row font-sans antialiased">
 
-    <nav class="bg-white shadow p-4">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold text-blue-600">AutoCare</h1>
-            <div>
-                <a href="{% url 'login' %}" class="text-sm text-blue-500 hover:underline">Login</a>
-                <a href="{% url 'register' %}" class="ml-4 text-sm text-blue-500 hover:underline">Register</a>
-            </div>
+    <!-- Mobile menu button and header -->
+    <header class="md:hidden bg-white shadow-sm p-4 flex justify-between items-center sticky top-0 z-20">
+        <h1 class="text-xl font-bold text-blue-600 flex items-center">
+            <i class="fas fa-car-side mr-2"></i>AutoCare
+        </h1>
+        <button id="mobile-menu-button" class="text-gray-500 hover:text-gray-600 focus:outline-none">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+        </button>
+    </header>
+
+    <!-- Side navigation -->
+    <aside id="side-nav" class="hidden md:flex flex-col bg-white shadow-sm w-64 h-screen fixed md:relative transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-10 border-r border-gray-200">
+        <div class="p-4 border-b border-gray-200">
+            <h1 class="text-xl font-bold text-blue-600 flex items-center">
+                <i class="fas fa-car-side mr-2"></i>AutoCare
+            </h1>
         </div>
-    </nav>
+        
+        <nav class="flex-1 overflow-y-auto">
+            <ul class="space-y-1 p-4">
+                <li>
+                    <a href="/" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-200 group">
+                        <i class="fas fa-tachometer-alt mr-3 text-gray-400 group-hover:text-blue-500"></i>
+                        Dashboard
+                    </a>
+                </li>
+                 <li>
+                    <a href="/customers/" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-200 group">
+                        <i class="fas fa-car mr-3 text-gray-400 group-hover:text-blue-500"></i>
+                        Customer
+                    </a>
+                </li>
+                <li>
+                    <a href="/vehicles/" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-200 group">
+                        <i class="fas fa-car mr-3 text-gray-400 group-hover:text-blue-500"></i>
+                        Vehicles
+                    </a>
+                </li>
+                <li>
+                    <a href="/services/" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-200 group">
+                        <i class="fas fa-tools mr-3 text-gray-400 group-hover:text-blue-500"></i>
+                        Services
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-200 group">
+                        <i class="fas fa-calendar-check mr-3 text-gray-400 group-hover:text-blue-500"></i>
+                        Appointments
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-200 group">
+                        <i class="fas fa-history mr-3 text-gray-400 group-hover:text-blue-500"></i>
+                        History
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-200 group">
+                        <i class="fas fa-cog mr-3 text-gray-400 group-hover:text-blue-500"></i>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="p-4 border-t border-gray-200 bg-gray-50">
+            <!-- <div class="flex items-center mb-4">
+                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-gray-700">Guest User</p>
+                    <p class="text-xs text-gray-500">guest@example.com</p>
+                </div>
+            </div> -->
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="text-white p-2 rounded-md bg-red-600 w-full hover:bg-red-800">
+                    Logout
+                </button>
+            </form>
+        </div>
+    </aside>
 
-    <main class="container mx-auto mt-8">
-        {% block content %}
-        {% endblock %}
-    </main>
+    <!-- Main content area -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Top navigation for desktop -->
+        <header class="hidden md:block bg-white shadow-sm p-4">
+            <div class="container mx-auto flex justify-between items-center">
+                <div class="text-sm text-gray-500 flex items-center">
+                    <i class="fas fa-hand-wave mr-2"></i>
+                    <span>Welcome back!</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                        <i class="fas fa-envelope"></i>
+                    </button>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span class="text-sm font-medium">Guest</span>
+                    </div>
+                </div>
+            </div>
+        </header>
 
+        <!-- Main content -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
+            <div class="container mx-auto">
+                {% block breadcrumbs %}
+                <nav class="flex mb-6" aria-label="Breadcrumb">
+                    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                        <li class="inline-flex items-center">
+                            <a href="#" class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-blue-600">
+                                <i class="fas fa-home mr-2"></i>
+                                Home
+                            </a>
+                        </li>
+                        {% block breadcrumb_items %}{% endblock %}
+                    </ol>
+                </nav>
+                {% endblock %}
+                
+                {% block content %}
+               
+                {% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Mobile menu toggle with improved behavior
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const sideNav = document.getElementById('side-nav');
+            sideNav.classList.toggle('hidden');
+            sideNav.classList.toggle('transform');
+            sideNav.classList.toggle('-translate-x-full');
+            
+            // Add overlay when mobile menu is open
+            if (!sideNav.classList.contains('hidden')) {
+                const overlay = document.createElement('div');
+                overlay.id = 'mobile-overlay';
+                overlay.className = 'fixed inset-0 bg-black bg-opacity-50 z-0 md:hidden';
+                overlay.addEventListener('click', function() {
+                    sideNav.classList.add('hidden');
+                    sideNav.classList.add('transform');
+                    sideNav.classList.add('-translate-x-full');
+                    document.body.removeChild(overlay);
+                });
+                document.body.appendChild(overlay);
+            } else {
+                const overlay = document.getElementById('mobile-overlay');
+                if (overlay) {
+                    document.body.removeChild(overlay);
+                }
+            }
+        });
+
+        // Close mobile menu when clicking on a nav item
+        document.querySelectorAll('#side-nav a').forEach(item => {
+            item.addEventListener('click', function() {
+                const sideNav = document.getElementById('side-nav');
+                if (window.innerWidth < 768) {
+                    sideNav.classList.add('hidden');
+                    sideNav.classList.add('transform');
+                    sideNav.classList.add('-translate-x-full');
+                    const overlay = document.getElementById('mobile-overlay');
+                    if (overlay) {
+                        document.body.removeChild(overlay);
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>

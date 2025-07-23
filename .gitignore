@@ -1,4 +1,66 @@
-/db.sqlite3
-/venv
-migrations/*.py
-/*.db"__pycache__/" 
+# Python bytecode
+*.py[cod]
+__pycache__/
+**/__pycache__/
+
+# Django SQLite database
+*.sqlite3
+*.db
+
+# Django migrations
+**/migrations/
+**/migrations/*.py
+!**/migrations/__init__.py
+
+# Python virtual environment
+venv/
+.env/
+.venv/
+ENV/
+env.bak/
+env/
+
+# Editor/IDE specific
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Log and temporary files
+*.log
+*.pot
+*.pyc
+*.pyo
+*.swp
+*.bak
+
+# Media and static files (optional: if generated or user-uploaded)
+media/
+staticfiles/
+static_root/
+
+# Django settings/local env files (optional: for security)
+.env
+.env.*
+
+# Coverage/test reports
+htmlcov/
+.coverage
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.cache
+.pytest_cache/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+MANIFEST

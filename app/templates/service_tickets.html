@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div x-data="{ showModal: false }">
+    <div class="px-4 py-2 sm:px-6">
+        <h1 class="text-2xl font-bold text-gray-900">Service Tickets</h1>
+        <p class="mt-2 text-sm text-gray-600">List of all service tickets in the system.</p>
+    </div>
+
+    <div class="flex justify-between px-4 py-2 sm:px-6 space-x-4">
+        <input placeholder="Search for tickets..."
+            class="py-2 px-4 border border-gray-300 rounded-md w-1/2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            type="text">
+        <button @click="showModal = true" 
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+            Create Ticket
+        </button>
+    </div>
+
+    {% if messages %}
+    <div class="px-4 sm:px-6">
+        {% for message in messages %}
+        <div class="mb-4 p-4 rounded-md {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket #</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for ticket in tickets %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <a href="{% url 'service_ticket_detail' ticket.pk %}" class="text-blue-600 hover:text-blue-800">
+                            #{{ ticket.id }}
+                        </a>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ ticket.vehicle.full_name }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ ticket.vehicle.customer.first_name }} {{ ticket.vehicle.customer.last_name }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <span class="px-2 py-1 rounded-full text-xs 
+                            {% if ticket.status == 'completed' %}bg-green-100 text-green-800
+                            {% elif ticket.status == 'cancelled' %}bg-red-100 text-red-800
+                            {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                            {{ ticket.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <span class="px-2 py-1 rounded-full text-xs 
+                            {% if ticket.priority == 3 %}bg-red-100 text-red-800
+                            {% elif ticket.priority == 2 %}bg-yellow-100 text-yellow-800
+                            {% else %}bg-green-100 text-green-800{% endif %}">
+                            {{ ticket.get_priority_display }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ ticket.created_at|date:"M d, Y" }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <a href="{% url 'service_ticket_detail' ticket.pk %}" class="text-blue-600 hover:text-blue-800 mr-2">
+                            View
+                        </a>
+                        {% if ticket.status != 'completed' and ticket.status != 'cancelled' %}
+                        <a href="{% url 'close_ticket' ticket.pk %}" class="text-green-600 hover:text-green-800">
+                            Close
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">No tickets found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Create Ticket Modal -->
+    <div x-show="showModal" 
+         x-transition
+         class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div @click.away="showModal = false" 
+             class="bg-white w-full max-w-2xl mx-auto rounded-lg shadow-lg p-6 overflow-y-auto max-h-screen">
+            <h2 class="text-lg font-bold mb-4 text-gray-800">Create Service Ticket</h2>
+            <form method="POST" action="{% url 'service_tickets' %}">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for field in form %}
+                    <div class="mb-4 {% if field.name in 'problem_description customer_notes internal_notes' %}md:col-span-2{% endif %}">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            {{ field.label }}
+                            {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+                        </label>
+                        {{ field }}
+                        {% if field.help_text %}
+                        <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+                        {% endif %}
+                        {% if field.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ field.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" 
+                            @click="showModal = false"
+                            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                        Create Ticket
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
