@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logged Out</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-white p-8 rounded-lg shadow-md text-center">
+            <svg class="mx-auto h-12 w-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h2 class="mt-4 text-2xl font-bold text-gray-800">You've been logged out</h2>
+            <p class="mt-2 text-gray-600">Thank you for using our system.</p>
+            <div class="mt-6">
+                <a href="{% url 'login' %}" class="text-blue-600 hover:text-blue-500 font-medium">
+                    Click here to login again
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

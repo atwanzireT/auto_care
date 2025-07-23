@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="px-4 py-2 sm:px-6">
+<div class="px-4 py-2 sm:px-6" x-data="ticketDetail">
     <div class="flex justify-between items-center">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">Service Ticket #{{ ticket.id }}</h1>
@@ -157,7 +157,7 @@
                             {% endfor %}
                             <tr class="bg-gray-50">
                                 <td colspan="3" class="px-6 py-4 text-right text-sm font-medium text-gray-900">Total</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${{ ticket.total_cost }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Ugx {{ ticket.total_cost }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -198,8 +198,8 @@
                                     {% endif %}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ part.quantity }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${{ part.price_per_unit }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${{ part.total_cost }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Ugx {{ part.price_per_unit }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Ugx {{ part.total_cost }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -288,11 +288,17 @@
 </div>
 
 <script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('ticketDetail', () => ({
-            showServiceModal: false,
-            showPartModal: false
-        }))
-    })
-</script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('ticketDetail', () => ({
+                showServiceModal: false,
+                showPartModal: false,
+                
+                init() {
+                    console.log('Alpine component initialized');
+                    console.log('Service modal state:', this.showServiceModal);
+                    console.log('Part modal state:', this.showPartModal);
+                }
+            }))
+        });
+    </script>
 {% endblock %}

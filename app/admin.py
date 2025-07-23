@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     Vehicle, ServiceTicket, Customer,
-    ServiceCategory, DefinedService, ServiceOffered, Part, PartUsed, Page
+    ServiceCategory, DefinedService, ServiceOffered, Part, PartUsed
 )
 
 
@@ -14,4 +14,3 @@ admin.site.register(DefinedService)
 admin.site.register(ServiceOffered)
 admin.site.register(Part)
 admin.site.register(PartUsed)
-admin.site.register(Page)

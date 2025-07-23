@@ -2,7 +2,9 @@ from django.shortcuts import render, redirect
 from app.models import Vehicle
 from .forms import VehicleForm
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def vehicles(request):
     vehicles = Vehicle.objects.select_related('customer').all().order_by('make', 'model')
     form = VehicleForm()

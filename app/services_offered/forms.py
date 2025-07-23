@@ -66,7 +66,7 @@ class ServiceOfferedForm(forms.ModelForm):
 class PartUsedForm(forms.ModelForm):
     class Meta:
         model = PartUsed
-        fields = ['part', 'quantity', 'price_per_unit', 'notes']
+        fields = ['part', 'quantity', 'notes']
         widgets = {
             'part': forms.Select(attrs={
                 'class': 'w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500'
@@ -74,10 +74,6 @@ class PartUsedForm(forms.ModelForm):
             'quantity': forms.NumberInput(attrs={
                 'class': 'w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500',
                 'min': 1
-            }),
-            'price_per_unit': forms.NumberInput(attrs={
-                'class': 'w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500',
-                'step': '0.01'
             }),
             'notes': forms.Textarea(attrs={
                 'class': 'w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500',

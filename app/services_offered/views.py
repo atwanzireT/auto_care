@@ -1,8 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from app.models import ServiceTicket, ServiceOffered, PartUsed
+from django.contrib.auth.decorators import login_required
 from .forms import ServiceTicketForm, ServiceOfferedForm, PartUsedForm
 
+
+@login_required
 def service_tickets(request):
     tickets = ServiceTicket.objects.select_related('vehicle', 'receptionist', 'mechanic').all()
     form = ServiceTicketForm()
@@ -19,6 +22,7 @@ def service_tickets(request):
         'form': form
     })
 
+@login_required
 def service_ticket_detail(request, pk):
     ticket = get_object_or_404(ServiceTicket.objects.prefetch_related(
         'services_offered__service',
@@ -63,6 +67,7 @@ def service_ticket_detail(request, pk):
         'status_choices': ServiceTicket.Status.choices
     })
 
+@login_required
 def close_ticket(request, pk):
     ticket = get_object_or_404(ServiceTicket, pk=pk)
     ticket.close_ticket()
