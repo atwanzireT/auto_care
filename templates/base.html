@@ -1,200 +1,225 @@
+{% load static %}
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full" x-data="{ mobileMenuOpen: false, darkMode: localStorage.getItem('darkMode') === 'true' }" :class="{ 'dark': darkMode }">
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}AutoCare{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="AutoCare - Your vehicle maintenance companion">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/alpinejs" defer></script>
+    <meta name="description" content="AutoCare - Professional vehicle maintenance management system">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+    
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
-
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+    
+    {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col md:flex-row font-sans antialiased">
 
-    <!-- Mobile menu button and header -->
-    <header class="md:hidden bg-white shadow-sm p-4 flex justify-between items-center sticky top-0 z-20">
-        <h1 class="text-xl font-bold text-blue-600 flex items-center">
-            <i class="fas fa-car-side mr-2"></i>AutoCare
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen flex flex-col md:flex-row font-sans">
+    <!-- Mobile header -->
+    <header class="md:hidden bg-white dark:bg-gray-800 p-4 flex justify-between items-center sticky top-0 z-30 border-b border-gray-200 dark:border-gray-700">
+        <h1 class="text-xl font-bold text-blue-600 dark:text-blue-400">
+            <i class="fas fa-car-side mr-2"></i>
+            AutoCare
         </h1>
-        <button id="mobile-menu-button" class="text-gray-500 hover:text-gray-600 focus:outline-none">
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-        </button>
+        <div class="flex items-center space-x-4">
+            <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)" 
+                    class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 p-1">
+                <i class="fas fa-moon" x-show="!darkMode"></i>
+                <i class="fas fa-sun" x-show="darkMode" x-cloak></i>
+            </button>
+            <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-gray-500 dark:text-gray-400">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+        </div>
     </header>
 
-    <!-- Side navigation -->
-    <aside id="side-nav" class="hidden md:flex flex-col bg-white shadow-sm w-64 h-screen fixed md:relative transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-10 border-r border-gray-200">
-        <div class="p-4 border-b border-gray-200">
-            <h1 class="text-xl font-bold text-blue-600 flex items-center">
-                <i class="fas fa-car-side mr-2"></i>AutoCare
+    <!-- Sidebar -->
+    <aside class="fixed md:static inset-y-0 left-0 z-20 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform md:translate-x-0 transition-transform duration-200 ease-in-out"
+           :class="{ '-translate-x-full': !mobileMenuOpen }"
+           x-cloak
+           x-show="mobileMenuOpen || window.innerWidth >= 768">
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+            <h1 class="text-xl font-bold text-blue-600 dark:text-blue-400">
+                <i class="fas fa-car-side mr-2"></i>
+                AutoCare
             </h1>
         </div>
         
-        <nav class="flex-1 overflow-y-auto">
-            <ul class="space-y-1 p-4">
-                <li>
-                    <a href="/" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-200 group">
-                        <i class="fas fa-tachometer-alt mr-3 text-gray-400 group-hover:text-blue-500"></i>
-                        Dashboard
-                    </a>
-                </li>
-                 <li>
-                    <a href="/customers/" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-200 group">
-                        <i class="fas fa-car mr-3 text-gray-400 group-hover:text-blue-500"></i>
-                        Customer
-                    </a>
-                </li>
-                <li>
-                    <a href="/vehicles/" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-200 group">
-                        <i class="fas fa-car mr-3 text-gray-400 group-hover:text-blue-500"></i>
-                        Vehicles
-                    </a>
-                </li>
-                <li>
-                    <a href="/services/" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-200 group">
-                        <i class="fas fa-tools mr-3 text-gray-400 group-hover:text-blue-500"></i>
-                        Services
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-200 group">
-                        <i class="fas fa-calendar-check mr-3 text-gray-400 group-hover:text-blue-500"></i>
-                        Appointments
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-200 group">
-                        <i class="fas fa-history mr-3 text-gray-400 group-hover:text-blue-500"></i>
-                        History
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-200 group">
-                        <i class="fas fa-cog mr-3 text-gray-400 group-hover:text-blue-500"></i>
-                        Settings
-                    </a>
-                </li>
-            </ul>
+        <nav class="p-4 space-y-2">
+            <a href="{% url 'dashboard' %}" class="flex items-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                <i class="fas fa-tachometer-alt mr-3 text-gray-500"></i>
+                Dashboard
+            </a>
+            <a href="{% url 'service_tickets' %}" class="flex items-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                <i class="fas fa-tools mr-3 text-gray-500"></i>
+                Service Tickets
+            </a>
+            <a href="{% url 'services' %}" class="flex items-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                <i class="fas fa-list mr-3 text-gray-500"></i>
+                Services
+            </a>
+            <a href="{% url 'mechanics' %}" class="flex items-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                <i class="fas fa-user-cog mr-3 text-gray-500"></i>
+                Mechanics
+            </a>
+            {% if request.user.is_staff %}
+            <a href="/admin/" class="flex items-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                <i class="fas fa-cog mr-3 text-gray-500"></i>
+                Admin Panel
+            </a>
+            {% endif %}
         </nav>
         
-        <div class="p-4 border-t border-gray-200 bg-gray-50">
-            <!-- <div class="flex items-center mb-4">
-                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+        <div class="p-4 border-t border-gray-200 dark:border-gray-700 mt-auto">
+            {% if user.is_authenticated %}
+            <div class="flex items-center mb-4">
+                <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-300">
                     <i class="fas fa-user"></i>
                 </div>
                 <div class="ml-3">
-                    <p class="text-sm font-medium text-gray-700">Guest User</p>
-                    <p class="text-xs text-gray-500">guest@example.com</p>
+                    <p class="text-sm font-medium">{{ user.get_full_name|default:user.username }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ user.email }}</p>
                 </div>
-            </div> -->
-            <form method="post" action="{% url 'logout' %}">
+            </div>
+            <form method="post" action="/accounts/logout/">
                 {% csrf_token %}
-                <button type="submit" class="text-white p-2 rounded-md bg-red-600 w-full hover:bg-red-800">
+                <button type="submit" class="w-full flex items-center justify-center p-2 text-sm text-white bg-red-600 hover:bg-red-700 rounded">
+                    <i class="fas fa-sign-out-alt mr-2"></i>
                     Logout
                 </button>
             </form>
+            {% else %}
+            <a href="{% url 'account_login' %}" class="w-full flex items-center justify-center p-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded">
+                <i class="fas fa-sign-in-alt mr-2"></i>
+                Login
+            </a>
+            {% endif %}
         </div>
     </aside>
 
-    <!-- Main content area -->
+    <!-- Main content -->
     <div class="flex-1 flex flex-col overflow-hidden">
-        <!-- Top navigation for desktop -->
-        <header class="hidden md:block bg-white shadow-sm p-4">
-            <div class="container mx-auto flex justify-between items-center">
-                <div class="text-sm text-gray-500 flex items-center">
-                    <i class="fas fa-hand-wave mr-2"></i>
-                    <span>Welcome back!</span>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none">
-                        <i class="fas fa-bell"></i>
-                    </button>
-                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none">
-                        <i class="fas fa-envelope"></i>
-                    </button>
-                    <div class="flex items-center space-x-2">
-                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <span class="text-sm font-medium">Guest</span>
+        <!-- Desktop header -->
+        <header class="hidden md:flex bg-white dark:bg-gray-800 p-4 border-b border-gray-200 dark:border-gray-700 justify-between items-center">
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+                <i class="fas fa-calendar-day mr-2"></i>
+                <span id="current-date"></span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)" 
+                        class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 p-1">
+                    <i class="fas fa-moon" x-show="!darkMode"></i>
+                    <i class="fas fa-sun" x-show="darkMode" x-cloak></i>
+                </button>
+                
+                {% if user.is_authenticated %}
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-300">
+                        <i class="fas fa-user"></i>
                     </div>
+                    <span class="text-sm">{{ user.get_short_name|default:user.username }}</span>
                 </div>
+                {% else %}
+                <a href="{% url 'account_login' %}" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">Login</a>
+                {% endif %}
             </div>
         </header>
 
-        <!-- Main content -->
-        <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
+        <!-- Content area -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 dark:bg-gray-900">
             <div class="container mx-auto">
+                <!-- Messages -->
+                {% if messages %}
+                <div class="mb-4 space-y-2">
+                    {% for message in messages %}
+                    <div x-data="{ show: true }" x-show="show" x-transition class="p-3 rounded border
+                        {% if message.tags == 'error' %}bg-red-100 dark:bg-red-900 border-red-200 dark:border-red-800 text-red-700 dark:text-red-200
+                        {% elif message.tags == 'success' %}bg-green-100 dark:bg-green-900 border-green-200 dark:border-green-800 text-green-700 dark:text-green-200
+                        {% elif message.tags == 'warning' %}bg-yellow-100 dark:bg-yellow-900 border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-200
+                        {% else %}bg-blue-100 dark:bg-blue-900 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-200{% endif %}">
+                        <div class="flex justify-between items-center">
+                            <span>{{ message }}</span>
+                            <button @click="show = false" class="text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Breadcrumbs -->
                 {% block breadcrumbs %}
-                <nav class="flex mb-6" aria-label="Breadcrumb">
-                    <ol class="inline-flex items-center space-x-1 md:space-x-3">
-                        <li class="inline-flex items-center">
-                            <a href="#" class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-blue-600">
-                                <i class="fas fa-home mr-2"></i>
-                                Home
-                            </a>
-                        </li>
-                        {% block breadcrumb_items %}{% endblock %}
-                    </ol>
+                <nav class="mb-4 text-sm">
+                    <a href="{% url 'dashboard' %}" class="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">
+                        <i class="fas fa-home mr-1"></i> Home
+                    </a>
+                    {% block breadcrumb_items %}{% endblock %}
                 </nav>
                 {% endblock %}
-                
-                {% block content %}
-               
+
+                <!-- Content header -->
+                {% block content_header %}
+                <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <h1 class="text-2xl font-bold">{% block content_title %}{% endblock %}</h1>
+                    {% block content_actions %}{% endblock %}
+                </div>
                 {% endblock %}
+
+                <!-- Main content -->
+                {% block content %}{% endblock %}
             </div>
         </main>
+
+        <!-- Footer -->
+        <footer class="bg-white dark:bg-gray-800 p-4 border-t border-gray-200 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400">
+            <div class="container mx-auto flex justify-between items-center">
+                <p>&copy; {% now "Y" %} AutoCare</p>
+                <div class="flex space-x-4">
+                    <a href="#" class="hover:text-blue-600 dark:hover:text-blue-400">Privacy</a>
+                    <a href="#" class="hover:text-blue-600 dark:hover:text-blue-400">Terms</a>
+                </div>
+            </div>
+        </footer>
     </div>
 
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js" defer></script>
     <script>
-        // Mobile menu toggle with improved behavior
-        document.getElementById('mobile-menu-button').addEventListener('click', function() {
-            const sideNav = document.getElementById('side-nav');
-            sideNav.classList.toggle('hidden');
-            sideNav.classList.toggle('transform');
-            sideNav.classList.toggle('-translate-x-full');
+        // Initialize dark mode and current date
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set initial dark mode
+            const darkMode = localStorage.getItem('darkMode') === 'true' || 
+                           (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches);
             
-            // Add overlay when mobile menu is open
-            if (!sideNav.classList.contains('hidden')) {
-                const overlay = document.createElement('div');
-                overlay.id = 'mobile-overlay';
-                overlay.className = 'fixed inset-0 bg-black bg-opacity-50 z-0 md:hidden';
-                overlay.addEventListener('click', function() {
-                    sideNav.classList.add('hidden');
-                    sideNav.classList.add('transform');
-                    sideNav.classList.add('-translate-x-full');
-                    document.body.removeChild(overlay);
-                });
-                document.body.appendChild(overlay);
-            } else {
-                const overlay = document.getElementById('mobile-overlay');
-                if (overlay) {
-                    document.body.removeChild(overlay);
-                }
-            }
-        });
+            // Display current date
+            document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
 
-        // Close mobile menu when clicking on a nav item
-        document.querySelectorAll('#side-nav a').forEach(item => {
-            item.addEventListener('click', function() {
-                const sideNav = document.getElementById('side-nav');
-                if (window.innerWidth < 768) {
-                    sideNav.classList.add('hidden');
-                    sideNav.classList.add('transform');
-                    sideNav.classList.add('-translate-x-full');
-                    const overlay = document.getElementById('mobile-overlay');
-                    if (overlay) {
-                        document.body.removeChild(overlay);
-                    }
-                }
+            // Auto-hide messages after 5 seconds
+            document.querySelectorAll('[x-data="{ show: true }"]').forEach(el => {
+                setTimeout(() => {
+                    const component = Alpine.$data(el);
+                    if (component) component.show = false;
+                }, 5000);
             });
         });
     </script>
+    
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>

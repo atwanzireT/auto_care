@@ -3,77 +3,53 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <!-- Header with Add Ticket Button -->
+  <!-- Header with Add Service Button -->
   <div class="sm:flex sm:items-center sm:justify-between mb-8">
     <div>
-      <h1 class="text-2xl font-bold text-gray-900">Service Tickets</h1>
-      <p class="mt-2 text-sm text-gray-600">Manage all customer service tickets</p>
+      <h1 class="text-2xl font-bold text-gray-900">Services</h1>
+      <p class="mt-2 text-sm text-gray-600">Manage all available services</p>
     </div>
-    <button 
-      onclick="document.getElementById('add-ticket-modal').showModal()"
+    <!-- <button 
+      onclick="document.getElementById('add-service-modal').showModal()"
       class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
     >
       <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
         <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
       </svg>
-      New Ticket
-    </button>
+      Add Service
+    </button> -->
   </div>
 
-  <!-- Tickets Table -->
+  <!-- Services Table -->
   <div class="bg-white shadow overflow-hidden sm:rounded-lg">
     <div class="overflow-x-auto">
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket #</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Services</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
             <th scope="col" class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          {% for ticket in tickets %}
+          {% for service in services %}
           <tr class="hover:bg-gray-50">
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{{ ticket.id }}</td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">{{ ticket.customer_name|default:"-" }}</div>
-              <div class="text-sm text-gray-500">{{ ticket.customer_phone|default:"" }}</div>
+              <div class="text-sm font-medium text-gray-900">{{ service.name }}</div>
+            </td>
+            <td class="px-6 py-4">
+              <div class="text-sm text-gray-500 max-w-prose">{{ service.description|default:"-"|truncatechars:100 }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {{ ticket.vehicle_number_plate|default:"-" }}
+              UGX {{ service.price|floatformat:2 }}
             </td>
-            <td class="px-6 py-4 text-sm text-gray-500">
-              <div class="flex flex-wrap gap-1">
-                {% for service in ticket.services.all %}
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                  {{ service.name }}
-                </span>
-                {% endfor %}
-              </div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <span class="px-2 py-1 text-xs font-semibold rounded-full 
-                {% if ticket.status == 'open' %}bg-yellow-100 text-yellow-800
-                {% elif ticket.status == 'in_progress' %}bg-blue-100 text-blue-800
-                {% else %}bg-green-100 text-green-800{% endif %}">
-                {{ ticket.get_status_display }}
-              </span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {{ ticket.created_at|date:"M d, Y" }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <a href="{% url 'service_ticket_detail' ticket.id %}" class="text-indigo-600 hover:text-indigo-900">View</a>
-            </td>
+        
           </tr>
           {% empty %}
           <tr>
-            <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
-              No tickets found
+            <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
+              No services found
             </td>
           </tr>
           {% endfor %}
@@ -82,21 +58,21 @@
     </div>
   </div>
 
-  <!-- Add Ticket Modal -->
-  <dialog id="add-ticket-modal" class="relative z-10">
+  <!-- Add Service Modal -->
+  <dialog id="add-service-modal" class="relative z-10">
     <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
     
     <div class="fixed z-10 inset-0 overflow-y-auto">
       <div class="flex items-center justify-center min-h-full p-4">
-        <div class="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="relative bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
           <!-- Modal header -->
           <div class="flex items-start justify-between p-4 border-b rounded-t border-gray-200">
             <h3 class="text-lg font-semibold text-gray-900">
-              Create New Service Ticket
+              Add New Service
             </h3>
             <button 
               type="button" 
-              onclick="document.getElementById('add-ticket-modal').close()"
+              onclick="document.getElementById('add-service-modal').close()"
               class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center"
             >
               <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -106,11 +82,13 @@
           </div>
           
           <!-- Modal body -->
-          <form method="POST" action="{% url 'service_tickets' %}" class="p-6 space-y-6">
+          <form method="POST" action="{% url 'services' %}" class="p-6 space-y-6">
             {% csrf_token %}
-            <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
+            <input type="hidden" name="action" value="create">
+            
+            <div class="space-y-4">
               {% for field in form %}
-              <div class="sm:col-span-{% if field.name == 'notes' %}2{% else %}1{% endif %}">
+              <div>
                 <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">
                   {{ field.label }}
                   {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
@@ -132,7 +110,7 @@
             <div class="flex items-center justify-end pt-4 space-x-3 border-t border-gray-200">
               <button 
                 type="button" 
-                onclick="document.getElementById('add-ticket-modal').close()"
+                onclick="document.getElementById('add-service-modal').close()"
                 class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 Cancel
@@ -141,7 +119,7 @@
                 type="submit" 
                 class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
-                Create Ticket
+                Save Service
               </button>
             </div>
           </form>
@@ -149,38 +127,65 @@
       </div>
     </div>
   </dialog>
+
+  <!-- Edit Service Modal -->
+  <dialog id="edit-service-modal" class="relative z-10">
+    <!-- Same structure as add modal, will be populated via JavaScript -->
+  </dialog>
 </div>
 
 <script>
 // Handle modal form submission
 document.addEventListener('DOMContentLoaded', function() {
-  const modal = document.getElementById('add-ticket-modal');
-  const form = modal.querySelector('form');
+  const addModal = document.getElementById('add-service-modal');
+  const addForm = addModal.querySelector('form');
   
-  form.addEventListener('submit', function(e) {
+  addForm.addEventListener('submit', function(e) {
     e.preventDefault();
-    fetch(form.action, {
-      method: 'POST',
-      body: new FormData(form),
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest',
-      }
-    })
-    .then(response => {
-      if (response.redirected) {
-        window.location.href = response.url;
-      } else {
-        return response.text().then(html => {
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, 'text/html');
-          const newForm = doc.querySelector('#add-ticket-modal form');
-          if (newForm) {
-            modal.innerHTML = doc.querySelector('#add-ticket-modal').innerHTML;
-          }
-        });
-      }
-    });
+    submitForm(addForm);
   });
 });
+
+function openEditModal(serviceId) {
+  fetch(`/services/${serviceId}/edit/`)
+    .then(response => response.text())
+    .then(html => {
+      const editModal = document.getElementById('edit-service-modal');
+      editModal.innerHTML = html;
+      editModal.showModal();
+      
+      const editForm = editModal.querySelector('form');
+      editForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        submitForm(editForm);
+      });
+    });
+}
+
+function submitForm(form) {
+  fetch(form.action, {
+    method: 'POST',
+    body: new FormData(form),
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+    }
+  })
+  .then(response => {
+    if (response.redirected) {
+      window.location.href = response.url;
+    } else {
+      return response.text().then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const errorForm = doc.querySelector('form');
+        if (errorForm) {
+          // Update the modal with validation errors
+          const modalId = form.closest('dialog').id;
+          document.getElementById(modalId).innerHTML = doc.querySelector(`#${modalId}`).innerHTML;
+        }
+      });
+    }
+  });
+}
 </script>
 {% endblock %}

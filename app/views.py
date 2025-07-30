@@ -1,148 +1,147 @@
-from django.shortcuts import render
-from django.utils import timezone
-from django.db.models import Count, Sum, F, Q, ExpressionWrapper, fields
-from django.db.models.functions import ExtractMonth, ExtractYear, TruncMonth
-from datetime import timedelta
-from decimal import Decimal
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.db.models import Count, Q
 from django.contrib.auth.decorators import login_required
-from .models import ServiceTicket, Part, Appointment, ServiceOffered, DefinedService, Customer, Vehicle
-from accounts.models import Profile
+from django.utils.translation import gettext_lazy as _
+from .models import Service, ServiceTicket, Mechanic
+from .forms import ServiceForm, ServiceTicketForm, MechanicForm
 
 
 @login_required
 def dashboard(request):
-    """Dashboard view compatible with SQLite"""
-    # Current date/time for calculations
-    now = timezone.now()
-    today = now.date()
-    thirty_days_ago = now - timedelta(days=30)
+    ticket_counts = ServiceTicket.objects.aggregate(
+        total=Count('id'),
+        open=Count('id', filter=Q(status='open')),
+        in_progress=Count('id', filter=Q(status='in_progress')),
+        closed=Count('id', filter=Q(status='closed'))
+    )
     
-    # 1. Ticket Statistics
-    ticket_stats = {
-        'open': ServiceTicket.objects.filter(status='open').count(),
-        'in_progress': ServiceTicket.objects.filter(status='in_progress').count(),
-        'waiting_parts': ServiceTicket.objects.filter(status='waiting_parts').count(),
-        'waiting_approval': ServiceTicket.objects.filter(status='waiting_approval').count(),
-        'completed_today': ServiceTicket.objects.filter(
-            status='completed',
-            completed_at__date=today
-        ).count(),
-    }
-    
-    # 2. Financial Metrics
-    financials = {
-        'monthly_revenue': ServiceOffered.objects.filter(
-            ticket__status='completed',
-            ticket__completed_at__gte=thirty_days_ago
-        ).aggregate(
-            total=Sum(F('quantity') * F('actual_price'))
-        )['total'] or Decimal('0'),
-        
-        'pending_approval_value': ServiceOffered.objects.filter(
-            ticket__status='waiting_approval'
-        ).aggregate(
-            total=Sum(F('quantity') * F('actual_price'))
-        )['total'] or Decimal('0'),
-    }
-    
-    # 3. Customer and Vehicle Metrics
-    customer_metrics = {
-        'total_customers': Customer.objects.count(),
-        'new_customers': Customer.objects.filter(
-            created_at__gte=thirty_days_ago
-        ).count(),
-        'active_vehicles': Vehicle.objects.filter(is_active=True).count(),
-    }
-    
-    # 4. Recent Data
-    recent_data = {
-        'tickets': ServiceTicket.objects.select_related(
-            'vehicle', 'vehicle__customer', 'receptionist'
-        ).order_by('-created_at')[:10],
-        
-        'appointments': Appointment.objects.select_related(
-            'customer', 'vehicle'
-        ).filter(
-            scheduled_time__gte=now,
-            scheduled_time__lte=now + timedelta(days=7)
-        ).order_by('scheduled_time')[:5],
-        
-        'low_stock_parts': Part.objects.filter(
-            quantity_in_stock__lt=F('minimum_stock'),
-            is_active=True
-        ).order_by('quantity_in_stock')[:5],
-    }
-    
-    # 5. Chart Data - SQLite compatible version
-    # Monthly tickets data
-    monthly_tickets = ServiceTicket.objects.filter(
-        created_at__gte=now - timedelta(days=365)
-    ).annotate(
-        month=ExtractMonth('created_at'),
-        year=ExtractYear('created_at')
-    ).values('year', 'month').annotate(
-        count=Count('id')
-    ).order_by('year', 'month')
-    
-    monthly_tickets_data = {
-        'labels': [f"{month['month']}/{month['year']}" for month in monthly_tickets],
-        'data': [month['count'] for month in monthly_tickets],
-    }
-    
-    # Revenue by service category
-    revenue_by_category = DefinedService.objects.filter(
-        offered_services__ticket__status='completed'
-    ).values(
-        'category__name'
-    ).annotate(
-        total=Sum(F('offered_services__quantity') * F('offered_services__actual_price'))
-    ).order_by('-total')
-    
-    revenue_by_category_data = {
-        'labels': [cat['category__name'] for cat in revenue_by_category],
-        'data': [float(cat['total'] or 0) for cat in revenue_by_category],
-    }
-    
-    # Mechanic performance
-    mechanic_performance_data = Profile.objects.filter(
-        role=Profile.Role.MECHANIC,
-        assigned_services__status='completed'
-    ).annotate(
-        completed=Count('assigned_services')
-    ).order_by('-completed')[:5].values('user__first_name', 'user__last_name', 'completed')
-    
-    # 6. Alerts
-    alerts = {
-        'overdue_tickets': ServiceTicket.objects.filter(
-            Q(status='in_progress') | Q(status='waiting_parts'),
-            estimated_completion__lt=now
-        ).count(),
-        'unassigned_tickets': ServiceTicket.objects.filter(
-            status='open',
-            mechanic__isnull=True
-        ).count(),
-        'out_of_stock': Part.objects.filter(
-            quantity_in_stock=0,
-            is_active=True
-        ).count(),
-    }
-    
-    context = {
-        'ticket_stats': ticket_stats,
-        'financials': financials,
-        'customer_metrics': customer_metrics,
-        'alerts': alerts,
-        'recent_tickets': recent_data['tickets'],
-        'upcoming_appointments': recent_data['appointments'],
-        'low_stock_parts': recent_data['low_stock_parts'],
-        'monthly_tickets_data': monthly_tickets_data,
-        'revenue_by_category_data': revenue_by_category_data,
-        'mechanic_performance_data': [
-            {
-                'name': f"{m['user__first_name']} {m['user__last_name']}",
-                'completed': m['completed']
-            } for m in mechanic_performance_data
-        ],
-    }
-    
-    return render(request, 'dashboard.html', context)
+    # Changed from created_by__user to just created_by
+    recent_tickets = ServiceTicket.objects.select_related(
+        'created_by', 'mechanic'
+    ).prefetch_related('services').order_by('-created_at')[:5]
+
+    # Changed from request.user to request.user (since created_by is now directly a CustomUser)
+    user_tickets = ServiceTicket.objects.filter(
+        created_by=request.user
+    ).prefetch_related('services').order_by('-created_at')[:3]
+
+    return render(request, 'dashboard.html', {
+        'ticket_counts': ticket_counts,
+        'recent_tickets': recent_tickets,
+        'user_tickets': user_tickets,
+    })
+
+@login_required
+def service_tickets(request):
+    tickets = ServiceTicket.objects.select_related(
+        'created_by', 'mechanic'
+    ).prefetch_related('services').order_by('-created_at')
+
+    if request.method == 'POST':
+        form = ServiceTicketForm(request.POST, user=request.user)
+        if form.is_valid():
+            ticket = form.save(commit=False)
+            ticket.created_by = request.user
+            ticket.save()
+            form.save_m2m()
+            messages.success(request, _("Service ticket created successfully!"))
+            return redirect('service_tickets')
+    else:
+        form = ServiceTicketForm(user=request.user)
+
+    return render(request, 'service_tickets.html', {
+        'tickets': tickets,
+        'form': form,
+    })
+
+@login_required
+def service_ticket_detail(request, pk):
+    ticket = get_object_or_404(
+        ServiceTicket.objects.select_related('created_by', 'mechanic').prefetch_related('services'),
+        pk=pk
+    )
+
+    if not request.user.is_staff and ticket.created_by != request.user.profile:
+        messages.error(request, _("You don't have permission to view this ticket."))
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        valid_choices = dict(ServiceTicket.STATUS_CHOICES).keys()
+        if new_status in valid_choices:
+            ticket.status = new_status
+            ticket.save()
+            messages.success(request, _("Ticket status updated!"))
+            return redirect('service_ticket_detail', pk=pk)
+        else:
+            messages.error(request, _("Invalid status update."))
+
+    return render(request, 'service_ticket_detail.html', {
+        'ticket': ticket,
+        'status_choices': ServiceTicket.STATUS_CHOICES,
+    })
+
+@login_required
+def services(request):
+    services = Service.objects.all().order_by('name')
+    form = ServiceForm()
+
+    if not request.user.is_staff:
+        return render(request, 'services.html', {
+            'services': services,
+        })
+
+    if request.method == 'POST':
+        # Only handle creation of new service
+        form = ServiceForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Service added successfully!"))
+            return redirect('services')
+
+    return render(request, 'services.html', {
+        'services': services,
+        'form': form,
+    })
+
+@login_required
+def mechanics(request):
+    mechanics = Mechanic.objects.all().order_by('name')
+
+    form = MechanicForm()
+    edit_form = None
+    edit_instance = None
+
+    if not request.user.is_staff:
+        return render(request, 'mechanics.html', {
+            'mechanics': mechanics,
+        })
+
+    if 'edit' in request.GET:
+        edit_instance = get_object_or_404(Mechanic, pk=request.GET.get('edit'))
+        edit_form = MechanicForm(instance=edit_instance)
+
+    if request.method == 'POST':
+        if 'edit_id' in request.POST:
+            # Editing existing mechanic
+            mechanic_instance = get_object_or_404(Mechanic, pk=request.POST.get('edit_id'))
+            edit_form = MechanicForm(request.POST, instance=mechanic_instance)
+            if edit_form.is_valid():
+                edit_form.save()
+                messages.success(request, _("Mechanic updated successfully!"))
+                return redirect('mechanics')
+        else:
+            # Creating new mechanic
+            form = MechanicForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request, _("Mechanic added successfully!"))
+                return redirect('mechanics')
+
+    return render(request, 'mechanics.html', {
+        'mechanics': mechanics,
+        'form': form,
+        'edit_form': edit_form,
+        'edit_instance': edit_instance,
+    })
