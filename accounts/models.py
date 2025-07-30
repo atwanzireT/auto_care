@@ -24,9 +24,7 @@ class CustomUser(AbstractUser):
 class Profile(models.Model):
     class Role(models.TextChoices):
         ADMIN = 'admin', _('Administrator')
-        MECHANIC = 'mechanic', _('Mechanic')
         RECEPTIONIST = 'receptionist', _('Receptionist')
-        INVENTORY_MANAGER = 'inventory', _('Inventory Manager')
     
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -37,7 +35,7 @@ class Profile(models.Model):
     role = models.CharField(
         max_length=20,
         choices=Role.choices,
-        default=Role.MECHANIC
+        default=Role.RECEPTIONIST
     )
     hire_date = models.DateField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
@@ -56,4 +54,4 @@ class Profile(models.Model):
         ordering = ['user__last_name', 'user__first_name']
     
     def __str__(self):
-        return f"{self.user.get_full_name()} ({self.get_role_display()})"
+            return f"{self.user.get_full_name() or self.user.username} ({self.get_role_display()})"
